@@ -1,4 +1,4 @@
-package main
+package godaddy
 
 type Client struct {
 	Key    string
