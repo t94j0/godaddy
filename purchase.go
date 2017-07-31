@@ -76,9 +76,9 @@ type DomainPurchaseResponse struct {
 	Currency  string `json:"currency,omitempty"`
 
 	// Error
-	Code    string `json:"code"`
-	Message string `json:"message"`
-	Name    string `json:"name"`
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
+	Name    string `json:"name,omitempty"`
 }
 
 // AgreementRoot is the location for agreeing to purchasing under TLD
@@ -97,6 +97,8 @@ var ErrPurchasing = errors.New("Error purchasing the domain")
 // 2. Create DomainPurchase object
 // 3. Purchase domain by making a request to PurchaseRoot
 func (c *Client) Purchase(domain string) error {
+	privacy := true
+
 	// First, we need to create a Consent object
 	// Parse domain for TLD
 	tld, _ := publicsuffix.PublicSuffix(domain)
@@ -104,9 +106,13 @@ func (c *Client) Purchase(domain string) error {
 	// Create query parameters
 	query := url.Values{}
 	query.Set("tlds", tld)
-	query.Set("privacy", "true")
+	if privacy {
+		query.Set("privacy", "true")
+	} else {
+		query.Set("privacy", "false")
+	}
 
-	// Make an HTTP client
+	// Make HTTP client
 	client := http.DefaultClient
 
 	// Generate auth header
@@ -148,21 +154,23 @@ func (c *Client) Purchase(domain string) error {
 	purchase.Period = 1
 	purchase.NameServers = []string{}
 	purchase.RenewAuto = false
-	purchase.Privacy = true
+	purchase.Privacy = privacy
 	purchase.ContactRegistrant = c.Contact
 	purchase.ContactAdmin = c.Contact
 	purchase.ContactTech = c.Contact
 	purchase.ContactBilling = c.Contact
 
-	body, err := json.Marshal(purchase)
-	if err != nil {
+	// Create buffer for the body
+	body := new(bytes.Buffer)
+	if err := json.NewEncoder(body).Encode(purchase); err != nil {
 		return err
 	}
 
-	fmt.Println(string(body))
+	fmt.Println(body.String())
 
 	// Lastly, purchase the domain
-	request, err = http.NewRequest("POST", PurchaseRoot, bytes.NewReader(body))
+	fmt.Println(PurchaseRoot)
+	request, err = http.NewRequest("POST", PurchaseRoot, body)
 	if err != nil {
 		return err
 	}
@@ -182,7 +190,7 @@ func (c *Client) Purchase(domain string) error {
 	}
 
 	if dpResp.Code != "" {
-		fmt.Fprintln(os.Stderr, dpResp.Code, dpResp.Message)
+		fmt.Fprintf(os.Stderr, "%+v\n", dpResp)
 		return ErrPurchasing
 	}
 
