@@ -1,10 +1,18 @@
 package godaddy
 
 type Client struct {
-	Key    string
-	Secret string
+	Key     string
+	Secret  string
+	Contact Contact
 }
 
-func NewClient(key, secret string) *Client {
-	return &Client{key, secret}
+func GetName() string {
+	return "GoDaddy"
+}
+
+func NewClient(key, secret string, contact Contact) *Client {
+	if key == "" || secret == "" {
+		return nil
+	}
+	return &Client{key, secret, contact}
 }
