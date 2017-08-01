@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	"golang.org/x/net/publicsuffix"
@@ -87,9 +85,6 @@ const AgreementRoot = "https://api.ote-godaddy.com/v1/domains/agreements"
 // PurchaseRoot location for purchasing domain
 const PurchaseRoot = "https://api.ote-godaddy.com/v1/domains/purchase"
 
-// ErrPurchasing is returned if there is an error purchasing the domain
-var ErrPurchasing = errors.New("Error purchasing the domain")
-
 // Purchase handles the purchasing of the specified domain. For GoDaddy, the
 // process for purchasing a domain is:
 // 1. Get consent key from the AgreementRoot by creating a LegalAgreement
@@ -166,10 +161,7 @@ func (c *Client) Purchase(domain string) error {
 		return err
 	}
 
-	fmt.Println(body.String())
-
 	// Lastly, purchase the domain
-	fmt.Println(PurchaseRoot)
 	request, err = http.NewRequest("POST", PurchaseRoot, body)
 	if err != nil {
 		return err
@@ -177,8 +169,6 @@ func (c *Client) Purchase(domain string) error {
 
 	request.Header.Add("Authorization", authHeader)
 	request.Header.Add("Content-Type", "application/json")
-
-	fmt.Println("")
 
 	response, err = client.Do(request)
 	if err != nil {
@@ -193,8 +183,7 @@ func (c *Client) Purchase(domain string) error {
 	}
 
 	if dpResp.Code != "" {
-		fmt.Fprintf(os.Stderr, "%+v\n", dpResp)
-		return ErrPurchasing
+		return errors.New("Error purchasing domain: " + dpResp.Message)
 	}
 
 	return nil
