@@ -76,9 +76,9 @@ type DomainPurchaseResponse struct {
 	Currency  string `json:"currency,omitempty"`
 
 	// Error
-	Code    string `json:"code,omitempty"`
-	Message string `json:"message,omitempty"`
-	Name    string `json:"name,omitempty"`
+	Code    string `json:"code"`
+	Message string `json:"message"`
+	Name    string `json:"name"`
 }
 
 // AgreementRoot is the location for agreeing to purchasing under TLD
@@ -176,6 +176,9 @@ func (c *Client) Purchase(domain string) error {
 	}
 
 	request.Header.Add("Authorization", authHeader)
+	request.Header.Add("Content-Type", "application/json")
+
+	fmt.Println("")
 
 	response, err = client.Do(request)
 	if err != nil {

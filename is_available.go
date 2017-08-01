@@ -45,13 +45,6 @@ func (c *Client) IsAvailable(domain string) (bool, uint64, error) {
 		return false, 0, err
 	}
 
-	url, err := http.ProxyFromEnvironment(request)
-	if err != nil {
-		return false, 0, err
-	}
-
-	response.URL = url
-
 	// make request
 	response, err := httpClient.Do(request)
 	if err != nil {
