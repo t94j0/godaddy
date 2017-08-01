@@ -6,7 +6,7 @@ type Client struct {
 	Contact Contact
 }
 
-func GetName() string {
+func (c *Client) GetName() string {
 	return "GoDaddy"
 }
 
