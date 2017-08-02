@@ -183,7 +183,7 @@ func (c *Client) Purchase(domain string) error {
 	}
 
 	if dpResp.Code != "" {
-		return errors.New("Error purchasing domain: " + dpResp.Message)
+		return errors.New(dpResp.Message)
 	}
 
 	return nil
